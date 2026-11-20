@@ -68,11 +68,12 @@ minutes. A second use case comes later.
 
 - The core receives the alert, the steps and the result, judges, sends the knock or the message, and
   records each judgement with its cost. Its code has no on-call term in it and uses nothing from a use
-  case, and a test checks this. It is not built yet.
+  case, and a test checks this. Its first code judges an event with one rule, and the rest is not built
+  yet.
 - The on-call use case holds the default rules, the default model with its instruction and its
   threshold, the template of alert rules, the lab scenarios and the results. It is not built yet.
 - The setup agent and the knowledge agent connect the stack of a team and write the knowledge. They
   are not built yet.
 
-The repository holds the project skeleton today. [`architecture.md`](architecture.md) says how oneknock
+The repository holds the first code of the core and a recording channel today. [`architecture.md`](architecture.md) says how oneknock
 is built.
