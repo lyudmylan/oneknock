@@ -13,7 +13,9 @@ interface of a channel, and a recording channel writes that knock where a test c
   - An event with the four values of `docs/architecture.md`: its state (open or closed), its identity,
     its start time, and whether it is urgent.
   - A rule as data. A rule has a name, a condition on the values of an event, and an action: a knock or
-    a quiet message. The core holds no rule in its code. It receives the list of rules with each call.
+    a quiet message. A condition is a plain value that the core reads: a comparison of one value of the
+    event with a given value. It is no function. A richer condition comes with the configuration (#7).
+    The core holds no rule in its code. It receives the list of rules with each call.
     The action "quiet message" is in this work item because the interface of a channel has the two
     levels, and one check shows that the core can send the lower one.
   - The judgement at the moment "the event arrives". The core applies the rules to an open event. When a
@@ -30,7 +32,8 @@ interface of a channel, and a recording channel writes that knock where a test c
 - Two checks that hold for each later change of the core:
   - The code of the core imports no file outside `src/core/`.
   - The code of the core holds no term of the on-call use case. The list of the terms is in
-    `tests/core/boundary.test.ts`. The first list is fixed at the review of this intent.
+    `tests/core/boundary.test.ts`. The review of the change that adds that test checks the first list
+    against the terms that the text of the change request of this intent names.
 - `docs/architecture.md`: the rows "Core" and "Channel" of the table of parts name their folders. The
   row "Channel" says that the recording channel writes to a file until the record store exists (#8).
 - `docs/product.md`: the part "Core" and the sentence about the skeleton say what exists now.
