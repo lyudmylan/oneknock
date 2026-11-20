@@ -1,7 +1,8 @@
 # Plan: the core gives an urgent event a knock (#1)
 
-Intent: `intents/urgent-event-knock.md`, checks 1 to 9. The intent, this plan and the code are in one
-change request, and the merge by the leader approves the three (her decision of 2026-11-20).
+Intent: `intents/urgent-event-knock.md`, checks 1 to 10. The intent, this plan and the code are in one
+change request, and the merge by the leader approves the three. This is a decision of the leader of
+2026-11-20, and the epic of this work item records it (#5, "Decisions made").
 
 ## Steps
 
@@ -23,14 +24,14 @@ change request, and the merge by the leader approves the three (her decision of 
    `send` adds the message to the file as one line of JSON. A function `readMessages(path)` returns the
    messages of the file in the order of the lines, and an empty list when the file does not exist.
 6. The tests, with Vitest. Each test has a comment with the intent and the number of its check.
-   - `tests/core/judge.test.ts`: checks 1 to 6. A channel that keeps its messages in a list stands in
+   - `tests/core/judge.test.ts`: checks 1 to 6 and check 10. A channel that keeps its messages in a list stands in
      for a real channel. The rule "an urgent event gets a knock" is data in this file.
    - `tests/channel/recording.test.ts`: check 7, in a temporary folder that the test removes.
    - `tests/core/boundary.test.ts`: checks 8 and 9. Both read each file under `src/core/` and fail when
      they find no file there. Check 8 reads each import and each export with a source: the source must
      be a relative path that stays inside `src/core/`. A package or a module of Node also fails. Check 9
-     looks for each term of the list in the text of each file, with no regard to case. The list: alert,
-     on-call, Alertmanager, Prometheus, severity, severe, incident, engineer.
+     looks for each term of the list in the text of each file, with no regard to case. The list is in the
+     test file, and the text of the change request names its first terms.
 7. `docs/architecture.md`, the table of parts: the row "Core" names `src/core/`, and the row "Channel"
    names `src/core/channel.ts` for the interface and `src/channel/` for the channels. The row "Channel"
    gets one sentence: the recording channel writes to a file until the record store exists.

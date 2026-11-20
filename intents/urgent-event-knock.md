@@ -18,8 +18,9 @@ interface of a channel, and a recording channel writes that knock where a test c
     The core holds no rule in its code. It receives the list of rules with each call.
     The action "quiet message" is in this work item because the interface of a channel has the two
     levels, and one check shows that the core can send the lower one.
-  - The judgement at the moment "the event arrives". The core applies the rules to an open event. When a
-    rule matches, the core sends one message to the channel. The message holds its level, the identity
+  - The judgement at the moment "the event arrives". The core applies the rules to an open event. When one
+    or more rules match, the first rule of the list that matches decides, and the core sends one message
+    to the channel. The message holds its level, the identity
     and the start time of its event, and the name of the rule that decided.
   - An event whose state is closed gets no message. An event that no rule matches gets no message in
     this work item.
@@ -65,10 +66,13 @@ and the threshold (#9). A push to a phone (#10). The HTTP endpoint and the start
 7. The recording channel writes a knock and a quiet message in the order of arrival, and a reader gets
    the same two messages back from the file.
    test: `tests/channel/recording.test.ts::a reader gets the messages back in the order of arrival`
-8. The code of the core imports no file outside `src/core/`.
+8. The code of the core imports nothing outside `src/core/`: no file, no package, no module of Node.
    test: `tests/core/boundary.test.ts::the core imports no file outside the core`
 9. No file under `src/core/` holds a term of the list, in code or in comments, with no regard to case.
    test: `tests/core/boundary.test.ts::the core holds no term of the on-call use case`
+10. With two matching rules, a quiet message first and a knock second, the event gets one quiet message
+    and no knock.
+    test: `tests/core/judge.test.ts::the first matching rule decides`
 
 ## Manual checks
 

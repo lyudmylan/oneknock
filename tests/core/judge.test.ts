@@ -76,6 +76,18 @@ test("a rule with the action quiet message sends a quiet message", async () => {
   expect(channel.messages.map((message) => message.level)).toEqual(["quiet message"]);
 });
 
+// intents/urgent-event-knock.md, check 10
+test("the first matching rule decides", async () => {
+  const quiet: Rule = {
+    name: "an urgent event gets a quiet message",
+    when: { value: "urgent", equals: true },
+    action: "quiet message",
+  };
+  const channel = listChannel();
+  await judgeEvent(event(), [quiet, urgentGetsKnock], channel);
+  expect(channel.messages.map((message) => message.level)).toEqual(["quiet message"]);
+});
+
 // intents/urgent-event-knock.md, check 6
 test("a knock names its event and its rule", async () => {
   const channel = listChannel();
