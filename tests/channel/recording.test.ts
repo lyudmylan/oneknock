@@ -5,8 +5,8 @@ import { join } from "node:path";
 
 import { expect, test } from "vitest";
 
-import { readMessages, RecordingChannel } from "../../src/channel/recording.js";
-import type { Message } from "../../src/core/channel.js";
+import { readMessages, RecordingChannel } from "../../src/channel/recording.ts";
+import type { Message } from "../../src/core/channel.ts";
 
 // intents/urgent-event-knock.md, check 7
 test("a reader gets the messages back in the order of arrival", async () => {

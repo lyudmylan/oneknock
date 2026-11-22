@@ -2,11 +2,15 @@
 
 import { appendFile, readFile } from "node:fs/promises";
 
-import type { Channel, Message } from "../core/channel.js";
+import type { Channel, Message } from "../core/channel.ts";
 
 /** A channel that appends each message to a file, in the order of arrival. */
 export class RecordingChannel implements Channel {
-  constructor(private readonly path: string) {}
+  private readonly path: string;
+
+  constructor(path: string) {
+    this.path = path;
+  }
 
   /** Appends the message to the file as one line of JSON. */
   async send(message: Message): Promise<void> {

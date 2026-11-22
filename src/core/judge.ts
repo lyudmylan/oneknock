@@ -1,8 +1,8 @@
 // The judgement at the moment the event arrives.
 
-import type { Channel, Message } from "./channel.js";
-import type { Event } from "./event.js";
-import { matches, type Rule } from "./rule.js";
+import type { Channel, Message } from "./channel.ts";
+import type { Event } from "./event.ts";
+import { matches, type Rule } from "./rule.ts";
 
 /**
  * Judges an event with the given rules. A closed event gets no message. For an open event the first

@@ -1,10 +1,10 @@
 // The judgement of the core, with a channel that keeps its messages in a list.
 import { expect, test } from "vitest";
 
-import type { Channel, Message } from "../../src/core/channel.js";
-import type { Event } from "../../src/core/event.js";
-import { judgeEvent } from "../../src/core/judge.js";
-import type { Rule } from "../../src/core/rule.js";
+import type { Channel, Message } from "../../src/core/channel.ts";
+import type { Event } from "../../src/core/event.ts";
+import { judgeEvent } from "../../src/core/judge.ts";
+import type { Rule } from "../../src/core/rule.ts";
 
 const urgentGetsKnock: Rule = {
   name: "an urgent event gets a knock",
