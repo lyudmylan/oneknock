@@ -14,9 +14,14 @@ case that a reviewer found, and a test shows each correction.
     a test calls it with a text.
   - It removes the comments of a text before it looks for sources. A comment that holds the text of an
     import is no import.
+  - The removal of comments reads the strings of the text. The text `//` or `/*` inside a string starts
+    no comment, so a string cannot hide an import that comes after it. A missed import is a false pass
+    of this check, and a false pass is worse than a false failure.
   - It also finds the source of a `require("x")`. This covers `import x = require("x")` too.
-  - One comment in the file names the limit: the removal of comments reads no string, so the text `//`
-    inside a string cuts the rest of that line.
+  - One comment in the file names the limit that stays: the removal reads a template string as one
+    string and does not read an expression inside it.
+  - The check on the files of the core also fails when it finds no source at all. The core has imports
+    between its files today, so a rule that hides each import fails.
 - `src/channel/recording.ts`, the reader of the record file. A line that is not valid JSON gives an error
   that names the file and the number of the line. The reader drops no line in silence, because the
   record is evidence. A last line that is not complete is such a line.
@@ -42,10 +47,15 @@ already merged. A parser of TypeScript for the check on the imports.
 3. A text with the four forms that the check knew before has the same sources as before: an import with
    `from`, an export with `from`, an import with no name, and an import as a call.
    test: `tests/core/import-sources.test.ts::the four known forms keep their sources`
-4. A record file whose second line is not complete gives an error, and the text of the error holds the
-   path of the file and the number 2.
+4. A record file of two lines, whose first line is valid and whose second line is not complete, gives an
+   error, and the text of the error holds the path of the file and the number 2.
    test: `tests/channel/recording.test.ts::a line that is not complete gives an error with its place`
-5. The port texts `" "`, `"0x10"`, `"1e3"`, `"80.0"`, `"-1"` and `"65536"` each give an error that names
+5. A text with `//` inside a string and an import after it on the same line has the source of that
+   import. A text with `/*` inside a string and an import on the next line has the source of that import.
+   test: `tests/core/import-sources.test.ts::a string starts no comment`
+6. The check on the imports of the core fails when the files of the core give no source at all.
+   test: `tests/core/boundary.test.ts::the core imports no file outside the core`
+7. The port texts `" "`, `"0x10"`, `"1e3"`, `"80.0"`, `"-1"` and `"65536"` each give an error that names
    `ONEKNOCK_PORT`. The port texts `"0"` and `"8080"` give the ports 0 and 8080.
    test: `tests/settings.test.ts::the port is a plain number in the range`
 
