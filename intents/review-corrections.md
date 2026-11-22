@@ -12,16 +12,14 @@ case that a reviewer found, and a test shows each correction.
 - `tests/core/boundary.test.ts`, the check on the imports of the core.
   - The code that finds the sources of the imports in a text moves to `tests/core/import-sources.ts`, so
     a test calls it with a text.
-  - It removes the comments of a text before it looks for sources. A comment that holds the text of an
-    import is no import.
-  - The removal of comments reads the strings of the text. The text `//` or `/*` inside a string starts
-    no comment, so a string cannot hide an import that comes after it. A missed import is a false pass
-    of this check, and a false pass is worse than a false failure.
   - It also finds the source of a `require("x")`. This covers `import x = require("x")` too.
-  - One comment in the file names the limit that stays: the removal reads a template string as one
-    string and does not read an expression inside it.
-  - The check on the files of the core also fails when it finds no source at all. The core has imports
-    between its files today, so a rule that hides each import fails.
+  - It removes no comment and reads the whole text of a file. So a comment that holds the text of an
+    import counts as an import, and the check fails on it. This stays on purpose: a rule that removes
+    comments can hide an import, a missed import is a false pass of this check, and a false pass is
+    worse than a false failure. One comment in the file says this, and it says what to do: write the
+    comment in other words.
+  - The existing test of the check also fails when the files of the core give no source at all. The
+    core has imports between its files today, so a change that finds no import fails.
 - `src/channel/recording.ts`, the reader of the record file. A line that is not valid JSON gives an error
   that names the file and the number of the line. The reader drops no line in silence, because the
   record is evidence. A last line that is not complete is such a line.
@@ -33,14 +31,16 @@ case that a reviewer found, and a test shows each correction.
 ## Out of scope
 
 New behaviour of the product. A change of a package file, of the contract, or of an intent that is
-already merged. A parser of TypeScript for the check on the imports.
+already merged. A parser of TypeScript for the check on the imports, and each rule that removes comments
+from a text.
 
 ## Acceptance checks
 
 ## Automatic checks
 
-1. A text with an import in a line comment and with an import in a block comment has no source.
-   test: `tests/core/import-sources.test.ts::a comment with the text of an import is no import`
+1. A text with an import in a line comment and a text with an import in a block comment each have the
+   source of that import.
+   test: `tests/core/import-sources.test.ts::a comment with the text of an import counts as an import`
 2. A text with `require("node:fs")` and a text with `import fs = require("node:fs")` each have the source
    `node:fs`.
    test: `tests/core/import-sources.test.ts::a require form is an import`
@@ -50,12 +50,10 @@ already merged. A parser of TypeScript for the check on the imports.
 4. A record file of two lines, whose first line is valid and whose second line is not complete, gives an
    error, and the text of the error holds the path of the file and the number 2.
    test: `tests/channel/recording.test.ts::a line that is not complete gives an error with its place`
-5. A text with `//` inside a string and an import after it on the same line has the source of that
-   import. A text with `/*` inside a string and an import on the next line has the source of that import.
-   test: `tests/core/import-sources.test.ts::a string starts no comment`
-6. The check on the imports of the core fails when the files of the core give no source at all.
+5. The check on the imports of the core fails when the files of the core give no source at all. The
+   existing test gets this assertion.
    test: `tests/core/boundary.test.ts::the core imports no file outside the core`
-7. The port texts `" "`, `"0x10"`, `"1e3"`, `"80.0"`, `"-1"` and `"65536"` each give an error that names
+6. The port texts `" "`, `"0x10"`, `"1e3"`, `"80.0"`, `"-1"` and `"65536"` each give an error that names
    `ONEKNOCK_PORT`. The port texts `"0"` and `"8080"` give the ports 0 and 8080.
    test: `tests/settings.test.ts::the port is a plain number in the range`
 
