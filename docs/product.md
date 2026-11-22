@@ -75,5 +75,6 @@ minutes. A second use case comes later.
 - The setup agent and the knowledge agent connect the stack of a team and write the knowledge. They
   are not built yet.
 
-The repository holds the first code of the core and a recording channel today. [`architecture.md`](architecture.md) says how oneknock
+The repository holds the first code of the core, an HTTP endpoint for events and a recording channel
+today, and oneknock starts as one process. [`architecture.md`](architecture.md) says how oneknock
 is built.

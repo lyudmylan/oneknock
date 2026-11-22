@@ -1,6 +1,6 @@
 // The interface through which the core sends a message. The channels live outside the core.
 
-import type { Action } from "./rule.js";
+import type { Action } from "./rule.ts";
 
 /** The level of a message: a knock or a quiet message. */
 export type Level = Action;

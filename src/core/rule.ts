@@ -1,6 +1,6 @@
 // A rule as plain data. The core holds no rule; it receives the list of rules with each call.
 
-import type { Event } from "./event.js";
+import type { Event } from "./event.ts";
 
 /** The name of one value of an event that a condition can compare. */
 export type EventValue = keyof Event;
