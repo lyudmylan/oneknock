@@ -1,7 +1,8 @@
 # Plan: this repo moves to Charter 0.3.15 (#26)
 
-Intent: `intents/charter-upgrade.md`, checks 1 to 6. The intent, this plan and the changes are in one
-change request for each of the two steps, and the merge by the leader approves them.
+Intent: `intents/charter-upgrade.md`, checks 1 to 7. The intent and this plan are in the first change
+request; each of the two change requests holds its own changes, and the merge by the leader approves
+them.
 
 ## Steps
 
@@ -12,11 +13,10 @@ change request for each of the two steps, and the merge by the leader approves t
    From the folder of step 1: `verdict.yml`, `review-intents.yml`, `review-code.yml`, `run.yml`. Check
    the contract with the scripts of 0.3.4: they must pass, because the verdict of the main branch uses
    them on this change request.
-3. The second change request, on top of the first. `charter.toml`: `no_product_reason` in `[checks]`,
-   the table `[boundary]`, `code_blocks = false` in `[review]`, `absent` in `[documents]`. The risk
+3. The second change request, on top of the first. `charter.toml`: the fields of the intent; the risk
    tiers and the list `text_checked` stay as they are. From the folder of step 1: `tests.yml`,
    `AGENTS.md`, `intents/_template.md`, `plans/_template.md`.
-4. Run the four commands of the automatic checks with the scripts of 0.3.15.
+4. Run the five commands of the automatic checks with the scripts of 0.3.15.
 5. After the merge of the first change request, start the verdict again on the second one.
 
 ## Files
