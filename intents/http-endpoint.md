@@ -33,8 +33,8 @@ that Node starts with one command.
     reads the address from this line.
   - On the signal SIGTERM or SIGINT it closes the server and ends with the exit code 0.
   - It uses the first rule, "an urgent event gets a knock", until the configuration exists (#7). The
-    rule is data in one file outside the core, and `src/main.ts` and the tests of this work item import
-    it from there. The core still holds no rule. The tests of the core keep their own rules, because
+    rule is data in `src/first-rule.ts`, and `src/main.ts` and the tests of this work item import it
+    from there. The core still holds no rule. The tests of the core keep their own rules, because
     they test the core with any rule.
 - The command that starts oneknock is `node src/main.ts`. Node runs the TypeScript files as they are, so
   there is no build step and no new package.
@@ -44,9 +44,9 @@ that Node starts with one command.
   - `src/channel/recording.ts` has one such place, the constructor of the recording channel, and it
     changes its form with no change of behaviour.
 - `docs/architecture.md`, the table of parts: the row "HTTP endpoint" names `src/http/` and what exists.
-  A new row, "Start of the process", names `src/main.ts`, the three settings and the choice "Node runs
-  the TypeScript files as they are, with no build step", with its reason: one command starts oneknock
-  with nothing to build first.
+  A new row, "Start of the process", names `src/main.ts` and `src/settings.ts`, the three settings and
+  the choice "Node runs the TypeScript files as they are, with no build step", with its reason: one
+  command starts oneknock with nothing to build first.
 - `docs/product.md`, the section "Parts": the sentence about what the repository holds today becomes
   "The repository holds the first code of the core, an HTTP endpoint for events and a recording channel
   today, and oneknock starts as one process."
