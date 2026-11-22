@@ -13,7 +13,7 @@ version = "v1"
 
 # The version of Charter that this repo uses. The workflows fetch Charter at the tag charter--v<version>.
 [charter]
-version = "0.3.4"
+version = "0.3.15"
 
 [tools]
 issue_tracker = "github-issues"
@@ -43,8 +43,10 @@ approvals = 1
 # The review loop: a finding at this severity or above keeps the loop open. The limits come from the source.
 [review]
 threshold = "medium"
+# The reviewer of the code is in its shadow period: its open findings block nothing yet.
+code_blocks = false
 
-# The Build phase: each work item has its plan, intents/<part>.plan.md, before the code.
+# The Build phase: each work item has its plan, plans/<part>.md, before the code.
 [build]
 plan_before_code = true
 
@@ -52,6 +54,14 @@ plan_before_code = true
 necessary = ["docs/product.md"]
 code_paths = ["src/**", "lab/**", "evals/**"]
 text_checked = ["docs/product.md", "docs/architecture.md", "README.md"]   # they must contain none of the text-checked patterns
+absent = ["docs/adr/**", "doc/adr/**", "doc/arch/adr-*.md", "docs/decisions/**"]   # no file for one decision: the choice and its reason go into the architecture map
+
+# The boundary of a run of an agent without a person. Such a run never changes a file under no_write and
+# never reads a file under no_read. The plan of a work item, plans/<part>.md, is under no pattern and passes.
+# The package files are closed: a person adds a package or a script, in a change request of its own.
+[boundary]
+no_write = ["charter.toml", "AGENTS.md", "CLAUDE.md", "intents/**", ".github/**", ".claude/**", "package.json", "pnpm-lock.yaml"]
+no_read = [".env", ".env.*", "**/.env", "**/.env.*"]
 
 [instructions]
 file = "AGENTS.md"
@@ -59,6 +69,8 @@ file = "AGENTS.md"
 # Commands that must pass before a push. They run on the code of the change.
 [checks]
 quality = ["pnpm typecheck", "pnpm test"]
+# The product test: the commands that start the product and test it from the outside, or the reason for none.
+no_product_reason = "no product to start yet: the first work items build it, and issues 3 and 4 add its test"
 
 # The lifecycle map: the six phases of the AI-native SDLC playbook. In each: what does the work, which
 # skill of Charter helps, and which built-in abilities of Claude Code the phase uses.
