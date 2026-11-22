@@ -123,14 +123,14 @@ has no such encryption, so a push through ntfy carries a short text with no evid
 
 | Part | What it does, and why it is built this way | Where | Since |
 |---|---|---|---|
-| Core | Judges at the event, at the result and at the time limit. Reads the configuration and applies it. Its code does not include specifics of a use case | planned | |
+| Core | Judges at the event, at the result and at the time limit. Reads the configuration and applies it. Its code does not include specifics of a use case | `src/core/` holds the judgement at the event with rules. The rest is planned | |
 | HTTP endpoint | Accepts the calls with events, steps and results, checks the token and the input, and passes them to the core. It is thin and sits outside the core, so the hosted way can run it as a service | planned | |
 | Event format | A map from the format of one detector to the four values that the core needs: the state of the event, its identity, its start time, and whether it is urgent. A map is configuration, so a new detector needs no change in the core | planned | |
 | Result input | One interface, "a result arrived", with one way per kind of agent as configuration. Agents differ in how they send a result, and the core does not see the difference | planned | |
 | Model | Calls the model that the configuration selects. One setting holds the model, its instruction and its threshold, because a threshold is valid for one model only | planned | |
 | Record store | PostgreSQL. Holds the record and the open events. A database server lets the open events survive a restart and keeps the hosted way possible | planned | |
 | Knowledge store | Markdown files in git about the services of a team, in the [Open Knowledge Format](https://github.com/GoogleCloudPlatform/open-knowledge-format) of Google Cloud. An engineer of the team reviews each change. Open point: how the files reach a hosted oneknock | planned | |
-| Channel | An interface with two levels: a knock is the highest, and a quiet message is the lowest. A configuration selects the channel. More channels can come later, such as PagerDuty, Slack or Telegram | planned | |
+| Channel | An interface with two levels: a knock is the highest, and a quiet message is the lowest. A configuration selects the channel. More channels can come later, such as PagerDuty, Slack or Telegram. The recording channel writes to a file until the record store exists | `src/core/channel.ts` holds the interface, and `src/channel/` holds the recording channel. The push to a phone is planned | |
 | MCP server | Gives the setup agent its tools: ask for a token, send a test event, read a judgement. A tool for the result of an agent comes later | planned | |
 | Setup agent | A skill. Writes the configuration for the detector and the agent of a team, with the values that the team decides. Calls the knowledge agent the first time. Its result arrives as a normal change that an engineer reviews | planned | |
 | Knowledge agent | A skill. Builds and maintains the knowledge about the services of a team. Open point: what starts it again when the services of the team change | planned | |
