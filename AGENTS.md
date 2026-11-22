@@ -16,6 +16,8 @@ path of the shell while the plugin is enabled.
 - The contract, this file, the intents, and the workflows are in the high risk tier: a deep review, and
   the leader approves. [tiers.high.paths]
 - A person approves each change to a contract. [change.person_approves_contract]
+- A run of an agent without a person does not change the files that the contract closes to it. A person
+  makes such a change, in its own change request. [boundary.no_write]
 - On GitHub, the workflows `tests` and `verdict` run on each change request. A red check "verdict"
   blocks the merge; its reasons are in the check and in the job log. [checks.quality]
 
@@ -42,6 +44,8 @@ When a file under a declared code path changes, `docs/product.md` changes too, o
 has one line in this exact form: `No document change: <reason>`. [documents.code_paths]
 A false failure of a gate: `False failure: <gate>: <reason>`. A finding of the intent reviewer that the
 author drops: `Dropped finding: <reason>`. One that the leader marks as wrong: `False finding: <reason>`. [checks.quality]
+A choice of the architecture and its reason go into `docs/architecture.md`, in the row of the part. No
+separate file holds one decision; a choice that must always hold becomes a check. [documents.absent]
 
 ## Text of commits, change requests, and issues
 
@@ -58,3 +62,6 @@ rounds, or refusals in sequence. [limits.acceptance_loop] [limits.review_loop] [
 The intent reviewer gives each finding a severity. A finding at the threshold or above keeps the
 author-reviewer loop open; below it, or at the limit, the loop ends and a person decides. The author side
 is the skill `review-loop`. [review.threshold] [limits.review_loop]
+The reviewer of the code, the workflow `review-code`, reviews each change of a file outside `intents/` and
+`plans/` with the skill `change-review`, under the same loop; while the contract leaves the flag false,
+its findings block nothing. [review.code_blocks]
