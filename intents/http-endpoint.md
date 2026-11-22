@@ -19,20 +19,23 @@ that Node starts with one command.
     is not JSON, or a body of more than 1 MB gets an error answer and starts nothing. The error answer
     is JSON and names the reason.
   - A valid event goes to the judgement of the core with the rules and the channel that the endpoint
-    received when it was created. The answer is 200. Its JSON body names the level of the message that
-    went out, or says that no message went out.
-  - When the core or the channel fails, the answer is 500, and oneknock keeps running.
+    received when it was created. The answer is 200. Its JSON body has one value, `message`: the level
+    of the message that went out, `"knock"` or `"quiet message"`, or `null` when no message went out.
+  - When the channel fails, the answer is 500, and oneknock keeps running.
 - `src/main.ts`: the start of oneknock as a process.
   - It reads three settings from the environment: `ONEKNOCK_RECORD_FILE`, the path of the file of the
     recording channel; `ONEKNOCK_PORT`, with the default 8080; and `ONEKNOCK_HOST`, with the default
-    `127.0.0.1`. With the port 0 the system selects a free port.
+    `127.0.0.1`. With the port 0 the system selects a free port. One function in `src/settings.ts` reads
+    the settings, so a test checks the defaults with no process.
   - Without `ONEKNOCK_RECORD_FILE` the process does not start. It names the variable and ends with the
     exit code 1.
   - At start it writes one line that ends with its address, in the form `http://<host>:<port>`. A test
     reads the address from this line.
   - On the signal SIGTERM or SIGINT it closes the server and ends with the exit code 0.
-  - It holds the first rule, "an urgent event gets a knock", as data, until the configuration exists
-    (#7). The core still holds no rule.
+  - It uses the first rule, "an urgent event gets a knock", until the configuration exists (#7). The
+    rule is data in one file outside the core, and `src/main.ts` and the tests of this work item import
+    it from there. The core still holds no rule. The tests of the core keep their own rules, because
+    they test the core with any rule.
 - The command that starts oneknock is `node src/main.ts`. Node runs the TypeScript files as they are, so
   there is no build step and no new package.
   - Each relative import ends in `.ts`, in `src/` and in `tests/`.
@@ -59,11 +62,12 @@ no package file. The Docker Compose file (#12). HTTPS: it belongs to the install
 
 ## Automatic checks
 
-1. A `POST /events` with an open urgent event gets the answer 200, and the channel holds one knock with
-   the identity and the start time of that event.
+1. A `POST /events` with an open urgent event gets the answer 200, the JSON body of the answer has
+   `message` with the value `"knock"`, and the channel holds one knock with the identity and the start
+   time of that event.
    test: `tests/http/endpoint.test.ts::an urgent event gets a knock through the endpoint`
-2. An open event that is not urgent gets the answer 200, the body says that no message went out, and the
-   channel holds no message.
+2. An open event that is not urgent gets the answer 200, the JSON body of the answer has `message` with
+   the value `null`, and the channel holds no message.
    test: `tests/http/endpoint.test.ts::an event that no rule matches gets no message`
 3. A body with one of the four values missing gets the answer 400, the answer names the value, and the
    channel holds no message. The test does this for each of the four values.
@@ -82,12 +86,21 @@ no package file. The Docker Compose file (#12). HTTPS: it belongs to the install
    test: `tests/http/endpoint.test.ts::a failure of the channel does not stop the endpoint`
 9. The command `node src/main.ts`, with the port 0 and a record file in a temporary folder, writes the
    line with its address. A `POST /events` to that address with an open urgent event gets the answer
-   200, and a reader gets one knock back from the record file. On SIGTERM the process ends with the exit
-   code 0.
+   200, and a reader gets one knock back from the record file. On the signal the process ends with the
+   exit code 0. The test does this for SIGTERM and for SIGINT.
    test: `tests/process.test.ts::oneknock starts, takes an event, and stops`
 10. Without `ONEKNOCK_RECORD_FILE` the process ends with the exit code 1, and its output names the
     variable.
     test: `tests/process.test.ts::oneknock does not start without the path of its record file`
+11. A valid event with one more value in the body gets the answer 200, and the core receives only the
+    four values.
+    test: `tests/http/endpoint.test.ts::a value outside the four is not passed to the core`
+12. With `ONEKNOCK_RECORD_FILE` only, the settings have the port 8080 and the host `127.0.0.1`.
+    test: `tests/settings.test.ts::the settings have their defaults`
+
+The type check of the quality gate proves the `.ts` imports and `erasableSyntaxOnly`: with the two
+settings in `tsconfig.json`, `pnpm typecheck` fails on an import that it cannot resolve and on syntax that
+Node cannot run as it is.
 
 This work item changes the behaviour of the product. The test of the product comes with #3, and its first
 scenario, "an urgent event gets a knock", shows this behaviour. Until then check 9 shows it.
