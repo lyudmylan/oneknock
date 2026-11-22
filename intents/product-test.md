@@ -28,8 +28,8 @@ uses the reader of the record file, `readMessages`, that #1 gave.
     also shows the known answer and the messages that came out.
   - It ends with the exit code 0 when each scenario passed. It ends with the exit code 1 when one
     scenario failed, and when the folder holds no scenario.
-  - When oneknock does not write its address in 10 seconds, the scenario fails with this reason. The
-    test stops the process of oneknock in each case, also after a failure.
+  - When oneknock does not write its address within the time limit, the scenario fails with this
+    reason. The test stops the process of oneknock in each case, also after a failure.
   - It needs no other host, no secret and no model call. It calls `127.0.0.1` only.
 - `product-test/scenarios/`: one JSON file for each scenario. A scenario is data: its name, the events
   to send, and its known answer. The known answer is the list of the messages, each with its level, the
