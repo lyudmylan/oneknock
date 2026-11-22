@@ -16,8 +16,8 @@ writes, so that a run of an agent runs its commands on a machine of the code hos
 - `charter.toml`: the version 0.3.16. The scripts of that version add one key to the settings of a run,
   `sandbox.autoAllowBashIfSandboxed`: a command that runs inside the sandbox needs no approval. The
   contract of this repo gets no new field.
-- `.github/workflows/run.yml`: the file of the setup step of 0.3.16. One line differs from the file of
-  0.3.15: the image is `ubuntu-24.04`, by its name.
+- `.github/workflows/run.yml`: the file of the setup step of 0.3.16, with the image `ubuntu-24.04` by its
+  name.
 - One change request. The version adds no field to the contract, so the checks of 0.3.15, which run
   from the main branch, read the changed contract.
 
@@ -45,7 +45,12 @@ Each command is the one of Charter 0.3.16.
 
 ## Manual checks
 
-6. The next run of an agent on issue 2 publishes a change request; or it ends as blocked, and the reason
-   on the issue is not the sandbox and not a refused approval of a command.
+6. Each of the five workflows is the file that the setup step of 0.3.16 writes with the values of this
+   repo and its toolchain steps.
+   who: the engineer, with a setup in an empty folder and a comparison of the files. Not automatic:
+   Charter has no command yet that updates a repo.
+7. The next run of an agent on issue 2 publishes a change request; or it ends as blocked, the reason on
+   the issue is neither the sandbox nor a refused approval of a command, and that reason shows that at
+   least one command of the quality checks started.
    who: the leader. Not automatic: the check needs a model call, a machine of the code host, and the
    label that a person puts.
