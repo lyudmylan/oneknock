@@ -25,8 +25,7 @@ one line of the contract.
   three.
 
 After the merge, the job `product` of each change request runs the test of the product. Before, the job
-passed with the reason for no product test. The brief of an agent run also names the command, so each run
-tests the product before it publishes its work.
+passed with the reason for no product test.
 
 ## Out of scope
 
