@@ -1,6 +1,6 @@
 # Plan: this repo moves to Charter 0.3.19 (#46)
 
-Intent: `intents/charter-upgrade-0-3-19.md`, checks 1 to 7.
+Intent: `intents/charter-upgrade-0-3-19.md`, checks 1 to 8.
 The intent, the plan, and the change are in one change request; the merge of the leader approves the three.
 
 ## Steps

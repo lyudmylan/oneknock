@@ -5,7 +5,8 @@ Work item: #46. Approval: a person merges the change request that adds this file
 ## Goal
 
 The contract names Charter 0.3.19 and the run workflow is the one that the setup step of that version
-writes, so that an agent can answer the findings of the reviewers on the change request of a run.
+writes, so that a person can start the answer of an agent to the findings of the reviewers on the change
+request of a run, and no answer starts without a person.
 
 ## In scope
 
@@ -39,9 +40,12 @@ Each command is the one of Charter 0.3.19.
    command: `charter-gate quality --contract charter.toml`
 3. The contract names the version 0.3.19.
    command: `grep -q '^version = "0\.3\.19"$' charter.toml`
-4. The run workflow holds the job that decides on an answer.
+4. The run workflow holds the job that decides on an answer, and the start after a reviewer workflow on a
+   branch of a run. The two lines are present; check 6 covers the file as a whole.
    command: `grep -q '^  decide:$' .github/workflows/run.yml`
-5. The contract holds no value for the start of an answer.
+   command: `grep -q 'branches: \["run/\*\*"\]' .github/workflows/run.yml`
+5. The contract of this work item holds no value for the start of an answer; a later work item can change
+   this.
    command: `sh -c '! grep -q "answer_start" charter.toml'`
 
 ## Manual checks
@@ -55,3 +59,8 @@ Each command is the one of Charter 0.3.19.
    `run` does not start.
    who: the leader. Not automatic: the code host starts a workflow after another one only from the main
    branch, and the check needs a report of a reviewer on a change request of a run.
+8. A start of the workflow `run` by hand with the number of a change request of a run, which has a finding
+   at the threshold, gives that change request a commit of an agent on its branch and a comment with the
+   outcome.
+   who: the leader. Not automatic: the check needs a model call, a machine of the code host, and a report
+   of a reviewer with such a finding.
