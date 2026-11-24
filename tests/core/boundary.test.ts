@@ -5,6 +5,8 @@ import { fileURLToPath } from "node:url";
 
 import { expect, test } from "vitest";
 
+import { sources } from "./import-sources.ts";
+
 const coreFolder = resolve(dirname(fileURLToPath(import.meta.url)), "../../src/core");
 
 // The terms of the on-call use case that the core must not hold.
@@ -26,20 +28,6 @@ function coreFiles(): string[] {
     .map((entry) => join(entry.parentPath, entry.name));
 }
 
-// Each source of an import or an export: `import ... from "x"`, `export ... from "x"`,
-// `import "x"`, and `import("x")`.
-const sourcePatterns = [
-  /\b(?:import|export)\s[^;]*?\bfrom\s*["']([^"']+)["']/g,
-  /\bimport\s*["']([^"']+)["']/g,
-  /\bimport\s*\(\s*["']([^"']+)["']/g,
-];
-
-function sources(text: string): string[] {
-  return sourcePatterns.flatMap((pattern) =>
-    [...text.matchAll(pattern)].map((match) => match[1] ?? ""),
-  );
-}
-
 function staysInCore(file: string, source: string): boolean {
   if (!source.startsWith("./") && !source.startsWith("../")) {
     return false;
@@ -52,6 +40,8 @@ function staysInCore(file: string, source: string): boolean {
 test("the core imports no file outside the core", () => {
   const files = coreFiles();
   expect(files.length).toBeGreaterThan(0);
+  // The core has imports between its files, so a change that finds no source is a broken check.
+  expect(files.flatMap((file) => sources(readFileSync(file, "utf8"))).length).toBeGreaterThan(0);
   const outside = files.flatMap((file) =>
     sources(readFileSync(file, "utf8"))
       .filter((source) => !staysInCore(file, source))

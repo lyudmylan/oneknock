@@ -1,5 +1,5 @@
 // The recording channel writes messages to a file, and a reader gets them back.
-import { mkdtemp, rm } from "node:fs/promises";
+import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -30,6 +30,18 @@ test("a reader gets the messages back in the order of arrival", async () => {
     await channel.send(knock);
     await channel.send(quiet);
     expect(await readMessages(path)).toEqual([knock, quiet]);
+  } finally {
+    await rm(folder, { recursive: true, force: true });
+  }
+});
+
+// intents/review-corrections.md, check 4
+test("a line that is not complete gives an error with its place", async () => {
+  const folder = await mkdtemp(join(tmpdir(), "oneknock-recording-"));
+  try {
+    const path = join(folder, "messages.jsonl");
+    await writeFile(path, '{"level":"knock"}\n{"level":"qu', "utf8");
+    await expect(readMessages(path)).rejects.toThrow(`${path}: line 2`);
   } finally {
     await rm(folder, { recursive: true, force: true });
   }

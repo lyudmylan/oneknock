@@ -17,8 +17,8 @@ export function readSettings(env: Record<string, string | undefined>): Settings 
   const portText = env["ONEKNOCK_PORT"];
   let port = 8080;
   if (portText !== undefined && portText !== "") {
-    port = Number(portText);
-    if (!Number.isInteger(port) || port < 0 || port > 65535) {
+    port = /^[0-9]+$/.test(portText) ? Number(portText) : Number.NaN;
+    if (!Number.isInteger(port) || port > 65535) {
       throw new Error(`ONEKNOCK_PORT is not a port: ${portText}`);
     }
   }
