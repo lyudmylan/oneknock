@@ -13,16 +13,14 @@ the findings of the reviewers on the change request of a run, with no step of a 
   decided on 2026-11-24 that the rule lives in the organization file, for each repo of the organization.
 - `charter.toml`: the version of the source, `v2`. The contract of this repo holds no value for
   `run.answer_start`; the value comes from the organization.
-- What changes in the work of this repo. After a report of a reviewer on a branch `run/<number>`, the
-  workflow `run` decides whether an answer starts. An answer starts for a finding at `medium` or above. An
-  agent corrects the finding or drops it with the reason, in a new commit on that branch, and a comment on
-  the change request says what it did. The limit of rounds of the organization, 3, ends the loop: an agent
-  answers one change request two times at most in one loop, and then a person decides.
-- A session of a person answers no finding on a branch of a run while the loop is open.
-- Each merge stays with a person. A change request with a finding that the agent dropped holds the words
-  `by the agent of a run:` in that line, and a person reads the reason before the merge.
-- The stop: the variable `CHARTER_RUNS` of the repo with the value `off` stops each run and each answer.
-  One line in this contract, `answer_start = "person"` under `[run]`, gives the start back to a person.
+- The behaviour of the answer is the one of that rule: the contract document of Charter says when an
+  answer starts, and the organization rules give the threshold and the limit of rounds. This intent does
+  not repeat them.
+- What this repo decides: it follows the version; each merge stays with a person, because no tier of this
+  contract has the approver `agent`; and the stop is the variable `CHARTER_RUNS` of the repo with the
+  value `off`, which stops each run and each answer.
+- A later change request can give the start back to a person in this repo, with one line in this contract.
+  That change is not a part of this work item, and no check here covers it.
 - One change request, with the intent and the plan in it: the change is one line and has no code of the
   product, and the merge of a person is the approval of the intent.
 
@@ -44,7 +42,8 @@ Each command is the one of Charter 0.3.19.
    command: `grep -q '^version = "v2"$' charter.toml`
 4. The contract of this repo holds no value of its own for the start of an answer.
    command: `sh -c '! grep -q "answer_start" charter.toml'`
-5. The effective contract says that the factory starts an answer.
+5. The effective contract says that the factory starts an answer. The command reads the JSON form that
+   Charter 0.3.19 prints.
    command: `sh -c 'charter-check check charter.toml --json | grep -q "\"run.answer_start\": \"factory\""'`
 
 ## Manual checks
