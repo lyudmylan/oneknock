@@ -47,10 +47,14 @@ package file, of the contract, or of an intent that is already merged.
    then answers each event with 200: a scenario with one event passes. The first part ends inside the
    number of the port, so a part of the address is no address that answers.
    test: `tests/product-test/run.test.ts::an address that arrives in two parts is read complete`
-4. With the scenarios of the repository, `runCommand` gives the exit code 0 and writes one line with
+4. A start command that writes its address with no line break and then waits: the test does not take the
+   address, and the scenario fails with the reason "no address" at the time limit. The test uses a time
+   limit of one second.
+   test: `tests/product-test/run.test.ts::an address with no line break is not taken`
+5. With the scenarios of the repository, `runCommand` gives the exit code 0 and writes one line with
    "passed" for each scenario.
    test: `tests/product-test/run.test.ts::the command passes on the scenarios of the repository`
-5. The test of the product passes on the code of the main branch with this work item.
+6. The test of the product passes on the code with this work item.
    command: `node product-test/run.ts`
 
 The checks of the earlier intents stay as they are and still pass with `pnpm test`.
