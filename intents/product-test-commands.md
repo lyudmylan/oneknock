@@ -1,61 +1,56 @@
-# Intent: one command starts oneknock, and one command runs the test of the product
+# Intent: the contract names the test of the product
 
 Work item: #4. Approval: a person merges the change request that adds this file.
 
 ## Goal
 
-A person or an agent starts oneknock with `pnpm start` and runs the test of the product with
-`pnpm product-test`, and the contract names the second command as its product test, so each change request
-runs it.
+The contract names the command of the test of the product as its product test, so each change request
+runs the test of the product.
 
 ## In scope
 
-A person makes this change, in a session with an agent. The package file and the contract are closed to a
-run of an agent with no person present, so no run starts from this work item.
+One command starts oneknock, and one command runs the test of the product. Both exist on the main branch:
+`node src/main.ts` and `node product-test/run.ts`. So this work item adds no script and no code. It changes
+one line of the contract.
 
-- `package.json`, two new scripts. The two scripts that exist stay as they are.
-  - `"start": "node src/main.ts"`
-  - `"product-test": "node product-test/run.ts"`
 - `charter.toml`, the section `[checks]`. One line replaces the line `no_product_reason`:
-  - `product = ["pnpm product-test"]`
+  - `product = ["node product-test/run.ts"]`
   - The contract then holds no `no_product_reason`. The contract takes a command or a reason, not both.
-  - The comment above the line names what the test does: it starts oneknock, sends the events of each
-    scenario, and compares the messages with the known answer.
-- `tests/product-test/run.test.ts`, one new test: the test of the product passes when its start command is
-  `pnpm start`.
-- `docs/architecture.md`, the rows "Start of the process" and "Test of the product": each row names its
-  script next to the command that it names today.
-- The test of the product itself keeps `node src/main.ts` as its start command. Its code does not change.
+  - The comment above the line says what the test does: it starts oneknock for each scenario, sends the
+    events, and compares the messages with the known answer.
+- `docs/architecture.md`, the row "Test of the product": one sentence says that the contract names the
+  command as its product test, so each change request runs it.
+- No agent run builds this work item: the contract is closed to a run of an agent with no person present.
+  The intent, the plan and the change are in one change request, and the merge of the leader approves the
+  three.
 
 After the merge, the job `product` of each change request runs the test of the product. Before, the job
-passed with the reason for no product test.
+passed with the reason for no product test. The brief of an agent run also names the command, so each run
+tests the product before it publishes its work.
 
 ## Out of scope
 
-New scenarios, and each change of `src/` or of `product-test/`. A change of a workflow: the job `product`
-exists and reads the contract. The two small findings on the test of the product (#40). A script that
-builds or installs oneknock: `pnpm install` stays the one step before the two commands.
+A script in the package file: the package file stays closed to an agent run, and the two commands need no
+short name. New scenarios, and each change of `src/`, of `product-test/` or of a test. A change of a
+workflow: the job `product` exists and reads the contract. The two small findings on the test of the
+product (#40).
 
 ## Acceptance checks
 
 ## Automatic checks
 
-1. The test of the product passes through its script on the code of the main branch with this work item.
-   command: `pnpm product-test`
-2. The script `start` starts oneknock: the two first scenarios pass when the start command of the test of
-   the product is `pnpm start`. A scenario passes only with the address on the first line and the exit
-   code 0 on SIGTERM, so the test shows both through the script.
-   test: `tests/product-test/run.test.ts::the start script starts oneknock`
-3. The contract names the command as its product test.
-   command: `grep -qx 'product = \["pnpm product-test"\]' charter.toml`
-4. The checks of the contract pass on the changed contract. They fail when the contract holds a command
+1. The contract names the command as its product test.
+   command: `grep -qx 'product = \["node product-test/run.ts"\]' charter.toml`
+2. The checks of the contract pass on the changed contract. They fail when the contract holds a command
    and a reason for no product test, so this check also shows that the reason is gone.
    command: `charter-check all charter.toml`
+3. The gate of the product test runs the command of the contract and passes.
+   command: `charter-gate product --contract charter.toml`
 
 This work item adds no behaviour to the product, so it names no new scenario of the test of the product.
 
 ## Manual checks
 
-5. The job `product` on the change request of this work item runs the test of the product: its log holds
-   one line with "passed" for each of the two scenarios. who: the leader, at the merge, with the link to
-   the log from the author. Not automatic: the log exists only on the code host, after the checks ran.
+4. The job `product` on the change request of this work item runs the test of the product and passes.
+   who: the leader, at the merge, with the link to the job from the author. Not automatic: the job exists
+   only on the code host, after the checks ran.

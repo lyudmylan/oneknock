@@ -69,8 +69,9 @@ file = "AGENTS.md"
 # Commands that must pass before a push. They run on the code of the change.
 [checks]
 quality = ["pnpm typecheck", "pnpm test"]
-# The product test: the commands that start the product and test it from the outside, or the reason for none.
-no_product_reason = "no product to start yet: the first work items build it, and issues 3 and 4 add its test"
+# The product test: it starts oneknock for each scenario, sends the events of the scenario, and compares the
+# messages that came out with the known answer.
+product = ["node product-test/run.ts"]
 
 # The lifecycle map: the six phases of the AI-native SDLC playbook. In each: what does the work, which
 # skill of Charter helps, and which built-in abilities of Claude Code the phase uses.
