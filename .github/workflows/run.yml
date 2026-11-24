@@ -20,10 +20,12 @@ permissions:
   contents: read
   issues: write
 
-# One run works at a time; a second one waits.
+# One run works at a time. The others wait in the order of their start: without `queue: max` the code host
+# keeps one waiting run, and a new run cancels it.
 concurrency:
   group: charter-run
   cancel-in-progress: false
+  queue: max
 
 env:
   CLAUDE_CODE_VERSION: "2.1.329"
@@ -187,13 +189,7 @@ jobs:
             exit 1
           fi
           TITLE=$(gh issue view "$ISSUE" --repo "$GITHUB_REPOSITORY" --json title --jq .title)
-          echo "Closes #$ISSUE" > "$RUN/body.md"
-          echo >> "$RUN/body.md"
-          if [ -f "$RUN/out/agent/change-request.md" ] && [ ! -L "$RUN/out/agent/change-request.md" ]; then
-            cat "$RUN/out/agent/change-request.md" >> "$RUN/body.md"
-          else
-            echo "An agent run built this work item. The agent wrote no text for the change request." >> "$RUN/body.md"
-          fi
+          python3 "$CHARTER_SCRIPTS/charter_run.py" text --number "$ISSUE" --request "$RUN/out/agent/change-request.md" > "$RUN/body.md"
           gh auth setup-git
           git -c core.hooksPath=/dev/null push --quiet origin "HEAD:refs/heads/$BRANCH"
           if COMMIT=$(git -c core.hooksPath=/dev/null rev-parse HEAD) \

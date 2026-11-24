@@ -1,6 +1,6 @@
 # Intent: the HTTP endpoint accepts an event and passes it to the core
 
-Work item: #2. Status: planned. Approval: a person merges the change request that adds this file.
+Work item: #2. Approval: a person merges the change request that adds this file.
 
 ## Goal
 

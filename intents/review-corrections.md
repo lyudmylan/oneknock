@@ -1,6 +1,6 @@
 # Intent: the three small findings of the code reviews on the thin path are corrected
 
-Work item: #34. Status: planned. Approval: a person merges the change request that adds this file.
+Work item: #34. Approval: a person merges the change request that adds this file.
 
 ## Goal
 

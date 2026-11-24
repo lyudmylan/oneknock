@@ -1,6 +1,6 @@
 # Intent: a test starts oneknock, sends events, and checks the messages that came out
 
-Work item: #3. Status: planned. Approval: a person merges the change request that adds this file.
+Work item: #3. Approval: a person merges the change request that adds this file.
 
 ## Goal
 
