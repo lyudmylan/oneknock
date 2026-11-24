@@ -5,7 +5,7 @@ import { join } from "node:path";
 
 import { afterEach, beforeEach, expect, test } from "vitest";
 
-import { defaultOptions, report, runScenarios, type RunOptions, type Scenario } from "../../product-test/run.ts";
+import { defaultOptions, report, runCommand, runScenarios, type RunOptions, type Scenario } from "../../product-test/run.ts";
 
 let folder: string;
 
@@ -158,4 +158,60 @@ test("a wrong answer or a wrong exit code makes the scenario fail", async () => 
   const fine = await scriptCommand("fine.mjs", fakeServer, "200", "0");
   const control = await runScenarios(options(dir, { command: fine }));
   expect(control[0]?.passed).toBe(true);
+});
+
+// intents/product-test-corrections.md, checks 1 to 5
+test("a file that is not valid JSON gives one failed line", async () => {
+  const dir = join(folder, "bad");
+  await mkdir(dir);
+  await writeFile(join(dir, "broken.json"), "{ not json");
+  const lines: string[] = [];
+  expect(await runCommand(options(dir), (line) => lines.push(line))).toBe(1);
+  expect(lines).toHaveLength(1);
+  expect(lines[0]).toMatch(/^failed:/);
+  expect(lines[0]).toContain("broken.json");
+});
+
+test("a missing folder gives one failed line", async () => {
+  const lines: string[] = [];
+  expect(await runCommand(options(join(folder, "missing")), (line) => lines.push(line))).toBe(1);
+  expect(lines).toHaveLength(1);
+  expect(lines[0]).toMatch(/^failed:/);
+});
+
+test("an address that arrives in two parts is read complete", async () => {
+  const source = fakeServer.replace(
+    /server\.listen\(.*\n.*\n\}\);/,
+    `server.listen(0, "127.0.0.1", () => {
+  const address = "http://127.0.0.1:" + server.address().port;
+  process.stdout.write("oneknock listens on http://127.0.0.1:" + String(server.address().port).slice(0, 1));
+  setTimeout(() => process.stdout.write(String(server.address().port).slice(1) + "\\n"), 300);
+});`,
+  );
+  const command = await scriptCommand("split.mjs", source, "200", "0");
+  const dir = await scenarioFolder([scenario("split", [event("a", true)], [])]);
+  const results = await runScenarios(options(dir, { command }));
+  expect(results[0]?.reason).not.toBe("the messages differ from the known answer");
+  expect(results[0]?.reason).toBeUndefined();
+});
+
+test("an address with no line break is not taken", async () => {
+  const source = `
+console.log = () => {};
+process.stdout.write("oneknock listens on http://127.0.0.1:1");
+setInterval(() => {}, 1000);
+process.on("SIGTERM", () => process.exit(0));
+`;
+  const command = await scriptCommand("nobreak.mjs", source);
+  const dir = await scenarioFolder([scenario("nobreak", [], [])]);
+  const results = await runScenarios(options(dir, { command, addressTimeoutMs: 1000 }));
+  expect(results[0]?.passed).toBe(false);
+  expect(results[0]?.reason).toBe("no address");
+});
+
+test("the command passes on the scenarios of the repository", async () => {
+  const lines: string[] = [];
+  expect(await runCommand(defaultOptions, (line) => lines.push(line))).toBe(0);
+  expect(lines).toHaveLength(2);
+  expect(lines.every((line) => line.includes("passed"))).toBe(true);
 });

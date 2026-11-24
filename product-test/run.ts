@@ -86,7 +86,9 @@ function readAddress(child: ChildProcess, timeoutMs: number): Promise<string> {
     }
     function onData(chunk: Buffer): void {
       output += chunk.toString();
-      const found = /(http:\/\/\S+)\s*$/m.exec(output);
+      // Only a complete line counts: the text after the last line break may be a part of an address.
+      const complete = output.slice(0, output.lastIndexOf("\n") + 1);
+      const found = /(http:\/\/\S+)\s*$/m.exec(complete);
       if (found?.[1] !== undefined) {
         finish(undefined, found[1]);
       }
@@ -160,7 +162,12 @@ export async function runScenarios(options: RunOptions): Promise<ScenarioResult[
   const files = (await readdir(options.scenariosDir)).filter((name) => name.endsWith(".json")).sort();
   const results: ScenarioResult[] = [];
   for (const file of files) {
-    const scenario = JSON.parse(await readFile(join(options.scenariosDir, file), "utf8")) as Scenario;
+    let scenario: Scenario;
+    try {
+      scenario = JSON.parse(await readFile(join(options.scenariosDir, file), "utf8")) as Scenario;
+    } catch (error) {
+      throw new Error(`the scenario file ${file} is not valid: ${error instanceof Error ? error.message : String(error)}`);
+    }
     results.push(await runScenario(file, scenario, options));
   }
   return results;
@@ -184,6 +191,20 @@ export function report(results: ScenarioResult[], write: (line: string) => void 
   return results.every((result) => result.passed) ? 0 : 1;
 }
 
+/** Runs the scenarios and writes the report. An error outside a scenario gives one line. Returns the exit code. */
+export async function runCommand(
+  options: RunOptions,
+  write: (line: string) => void = console.log,
+): Promise<number> {
+  try {
+    return report(await runScenarios(options), write);
+  } catch (error) {
+    const text = error instanceof Error ? error.message : String(error);
+    write(`failed: ${text.replace(/\s*\n\s*/g, " ")}`);
+    return 1;
+  }
+}
+
 if (import.meta.main) {
-  process.exitCode = report(await runScenarios(defaultOptions));
+  process.exitCode = await runCommand(defaultOptions);
 }
