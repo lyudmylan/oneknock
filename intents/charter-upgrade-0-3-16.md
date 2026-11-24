@@ -1,6 +1,6 @@
 # Intent: this repo moves to Charter 0.3.16
 
-Work item: #31. Status: planned. Approval: a person merges the change request that adds this file.
+Work item: #31. Approval: a person merges the change request that adds this file.
 
 ## Goal
 

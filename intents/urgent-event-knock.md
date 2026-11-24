@@ -1,6 +1,6 @@
 # Intent: the core gives an urgent event a knock
 
-Work item: #1. Status: planned. Approval: a person merges the change request that adds this file.
+Work item: #1. Approval: a person merges the change request that adds this file.
 
 ## Goal
 
