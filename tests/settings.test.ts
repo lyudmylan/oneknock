@@ -22,6 +22,17 @@ test("the settings read the port and the host", () => {
   expect(settings.host).toBe("0.0.0.0");
 });
 
+// intents/review-corrections.md, check 6
+test("the port is a plain number in the range", () => {
+  for (const text of [" ", "0x10", "1e3", "80.0", "-1", "65536"]) {
+    expect(() => readSettings({ ONEKNOCK_RECORD_FILE: "a", ONEKNOCK_PORT: text })).toThrow(
+      "ONEKNOCK_PORT",
+    );
+  }
+  expect(readSettings({ ONEKNOCK_RECORD_FILE: "a", ONEKNOCK_PORT: "0" }).port).toBe(0);
+  expect(readSettings({ ONEKNOCK_RECORD_FILE: "a", ONEKNOCK_PORT: "8080" }).port).toBe(8080);
+});
+
 test("the settings refuse a missing file and a wrong port", () => {
   expect(() => readSettings({})).toThrow("ONEKNOCK_RECORD_FILE");
   expect(() => readSettings({ ONEKNOCK_RECORD_FILE: "a", ONEKNOCK_PORT: "x" })).toThrow(

@@ -29,8 +29,17 @@ export async function readMessages(path: string): Promise<Message[]> {
     }
     throw error;
   }
-  return text
-    .split("\n")
-    .filter((line) => line !== "")
-    .map((line) => JSON.parse(line) as Message);
+  // The record is evidence: a line that is not valid JSON is an error, never dropped.
+  const messages: Message[] = [];
+  text.split("\n").forEach((line, index) => {
+    if (line === "") {
+      return;
+    }
+    try {
+      messages.push(JSON.parse(line) as Message);
+    } catch {
+      throw new Error(`${path}: line ${index + 1} is not valid JSON`);
+    }
+  });
+  return messages;
 }
