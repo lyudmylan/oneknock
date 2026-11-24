@@ -9,13 +9,13 @@ judgement and sends no second message.
 
 ## In scope
 
-Two events are the same when they have the same identity and the same start time. This pair names an
-event in each rule below.
+An event is named by its identity and its start time, as `docs/architecture.md` defines it. This pair
+names an event in each rule below.
 
 - `src/core/event-store.ts`: the interface `EventStore`, through which the core keeps the state of the
   events. It has three operations, and each one takes the identity and the start time.
-  - `open` stores the event as open when the store does not know it, and it tells whether it stored it.
-    For an event that the store knows, open or closed, it changes nothing and tells so.
+  - `open` stores the event as open when the store does not know it, and it returns true. For an event
+    that the store knows, open or closed, it changes nothing and returns false.
   - `close` stores the event as closed, also when the store did not know it.
   - `forget` removes the event, so the store does not know it any more.
   - Each operation is asynchronous, because the record store comes later behind the same interface.
@@ -81,9 +81,9 @@ a phone. A change of a package file, of the contract, or of an intent that is al
 7. A channel that fails at the first message and works after it: the first call with an urgent event
    fails, and the second call with the same event sends one knock.
    test: `tests/core/judge.test.ts::an event whose message failed is judged again at its repeat`
-8. The store in memory: `open` tells "stored" at the first call and "not stored" at the second one. After
-   `close`, `open` tells "not stored". After `forget`, `open` tells "stored" again. An event with the
-   same identity and another start time is another event.
+8. The store in memory: `open` returns true at the first call and false at the second one. After `close`,
+   `open` returns false. After `forget`, `open` returns true again. An event with the same identity and
+   another start time is another event.
    test: `tests/store/memory.test.ts::the store knows an event by its identity and its start time`
 9. Two calls of `POST /events` with the same open urgent event: each gets the answer 200, the first with
    `{"message": "knock"}` and the second with `{"message": null}`.
@@ -91,12 +91,13 @@ a phone. A change of a package file, of the contract, or of an intent that is al
 10. The check on the imports of the core still passes: the core imports no file outside the core, and
     `src/store/memory.ts` is outside the core.
     test: `tests/core/boundary.test.ts::the core imports no file outside the core`
-11. The test of the product passes with the five scenarios.
+11. The test of the product passes with the scenarios of the folder, the three new ones included.
     command: `node product-test/run.ts`
-12. With the five scenarios in the folder, the two tests of `tests/product-test/run.test.ts` that read the
-    scenarios of the repository pass. They hold no count of the scenarios, so a later scenario file needs
-    no change of a test.
+12. With the three new scenario files in the folder, the two tests of `tests/product-test/run.test.ts`
+    that read the scenarios of the repository pass. They hold no count of the scenarios, so a later
+    scenario file needs no change of a test.
     test: `tests/product-test/run.test.ts::the command passes on the scenarios of the repository`
+    test: `tests/product-test/run.test.ts::the two first scenarios pass`
 
 The checks of the earlier intents stay as they are and still pass with `pnpm test`, with one change: each
 test that calls `judgeEvent` or creates the endpoint gives it a store.
