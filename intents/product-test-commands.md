@@ -22,8 +22,7 @@ run of an agent with no person present, so no run starts from this work item.
   - The comment above the line names what the test does: it starts oneknock, sends the events of each
     scenario, and compares the messages with the known answer.
 - `tests/product-test/run.test.ts`, one new test: the test of the product passes when its start command is
-  `pnpm start`. So a test shows that the script starts oneknock, that oneknock writes its address, and
-  that it ends with the exit code 0 on SIGTERM through the script.
+  `pnpm start`.
 - `docs/architecture.md`, the rows "Start of the process" and "Test of the product": each row names its
   script next to the command that it names today.
 - The test of the product itself keeps `node src/main.ts` as its start command. Its code does not change.
@@ -44,7 +43,8 @@ builds or installs oneknock: `pnpm install` stays the one step before the two co
 1. The test of the product passes through its script on the code of the main branch with this work item.
    command: `pnpm product-test`
 2. The script `start` starts oneknock: the two first scenarios pass when the start command of the test of
-   the product is `pnpm start`.
+   the product is `pnpm start`. A scenario passes only with the address on the first line and the exit
+   code 0 on SIGTERM, so the test shows both through the script.
    test: `tests/product-test/run.test.ts::the start script starts oneknock`
 3. The contract names the command as its product test.
    command: `grep -qx 'product = \["pnpm product-test"\]' charter.toml`
