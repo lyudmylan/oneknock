@@ -6,6 +6,7 @@ import { RecordingChannel } from "./channel/recording.ts";
 import { urgentGetsKnock } from "./first-rule.ts";
 import { createEndpoint } from "./http/endpoint.ts";
 import { readSettings, type Settings } from "./settings.ts";
+import { MemoryEventStore } from "./store/memory.ts";
 
 let settings: Settings;
 try {
@@ -18,6 +19,7 @@ try {
 const server = createEndpoint({
   rules: [urgentGetsKnock],
   channel: new RecordingChannel(settings.recordFile),
+  store: new MemoryEventStore(),
 });
 
 server.listen(settings.port, settings.host, () => {

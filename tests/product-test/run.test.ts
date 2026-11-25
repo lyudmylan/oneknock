@@ -1,5 +1,5 @@
 // The test of the product, tested: intents/product-test.md, checks 2 to 8.
-import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readdir, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -71,7 +71,10 @@ process.on("SIGTERM", () => process.exit(exitCode));
 // intents/product-test.md, check 2
 test("the two first scenarios pass", async () => {
   const results = await runScenarios(defaultOptions);
-  expect(results.map((result) => [result.file, result.passed])).toEqual([
+  const first = results.filter((result) =>
+    ["01-urgent-event-knock.json", "02-not-urgent-no-message.json"].includes(result.file),
+  );
+  expect(first.map((result) => [result.file, result.passed])).toEqual([
     ["01-urgent-event-knock.json", true],
     ["02-not-urgent-no-message.json", true],
   ]);
@@ -212,6 +215,7 @@ process.on("SIGTERM", () => process.exit(0));
 test("the command passes on the scenarios of the repository", async () => {
   const lines: string[] = [];
   expect(await runCommand(defaultOptions, (line) => lines.push(line))).toBe(0);
-  expect(lines).toHaveLength(2);
+  const files = (await readdir(defaultOptions.scenariosDir)).filter((name) => name.endsWith(".json"));
+  expect(lines).toHaveLength(files.length);
   expect(lines.every((line) => line.includes("passed"))).toBe(true);
 });
