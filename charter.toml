@@ -9,7 +9,7 @@ name = "oneknock"
 [source]
 address = "https://github.com/lyudmylan/charter-org"
 file = "organization.toml"
-version = "v1"
+version = "v2"
 
 # The version of Charter that this repo uses. The workflows fetch Charter at the tag charter--v<version>.
 [charter]
