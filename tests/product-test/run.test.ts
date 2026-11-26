@@ -68,8 +68,74 @@ server.listen(0, "127.0.0.1", () => {
 process.on("SIGTERM", () => process.exit(exitCode));
 `;
 
+// intents/time-limit-knock.md, check 12
+test("a scenario gives its settings to its process", async () => {
+  const source = `
+import { createServer } from "node:http";
+import { appendFileSync } from "node:fs";
+const server = createServer((req, res) => {
+  req.resume();
+  req.on("end", () => {
+    appendFileSync(process.env.ONEKNOCK_RECORD_FILE, JSON.stringify({
+      level: "quiet message", identity: process.env.MY_SETTING, startTime: "s", rule: "r",
+    }) + "\\n");
+    res.writeHead(200); res.end("{}");
+  });
+});
+server.listen(0, "127.0.0.1", () => {
+  console.log("oneknock listens on http://127.0.0.1:" + server.address().port);
+});
+process.on("SIGTERM", () => process.exit(0));
+`;
+  const command = await scriptCommand("env.mjs", source);
+  const dir = await scenarioFolder([
+    {
+      name: "settings",
+      settings: { MY_SETTING: "value-1" },
+      events: [event("a", false)],
+      messages: [{ level: "quiet message", identity: "value-1", startTime: "s", rule: "r" }],
+    } as Scenario,
+  ]);
+  const results = await runScenarios(options(dir, { command }));
+  expect(results[0]?.reason).toBeUndefined();
+  expect(results[0]?.passed).toBe(true);
+});
+
+// intents/time-limit-knock.md, check 13
+test("a scenario waits before it reads the messages", async () => {
+  const source = `
+import { createServer } from "node:http";
+import { appendFileSync } from "node:fs";
+const server = createServer((req, res) => {
+  req.resume();
+  req.on("end", () => {
+    res.writeHead(200); res.end("{}");
+    setTimeout(() => appendFileSync(process.env.ONEKNOCK_RECORD_FILE, JSON.stringify({
+      level: "knock", identity: "late", startTime: "s", rule: "r",
+    }) + "\\n"), 300);
+  });
+});
+server.listen(0, "127.0.0.1", () => {
+  console.log("oneknock listens on http://127.0.0.1:" + server.address().port);
+});
+process.on("SIGTERM", () => process.exit(0));
+`;
+  const command = await scriptCommand("late.mjs", source);
+  const messages = [{ level: "knock", identity: "late", startTime: "s", rule: "r" }];
+  const dir = await scenarioFolder([
+    { name: "waits", waitMs: 1000, events: [event("a", false)], messages } as Scenario,
+  ]);
+  const results = await runScenarios(options(dir, { command }));
+  expect(results[0]?.passed).toBe(true);
+  const noWait = await scenarioFolder([
+    { name: "no wait", events: [event("a", false)], messages } as Scenario,
+  ]);
+  const early = await runScenarios(options(noWait, { command }));
+  expect(early[0]?.passed).toBe(false);
+});
+
 // intents/product-test.md, check 2
-test("the two first scenarios pass", async () => {
+test("the two first scenarios pass", { timeout: 60_000 }, async () => {
   const results = await runScenarios(defaultOptions);
   const first = results.filter((result) =>
     ["01-urgent-event-knock.json", "02-not-urgent-no-message.json"].includes(result.file),
@@ -212,7 +278,7 @@ process.on("SIGTERM", () => process.exit(0));
   expect(results[0]?.reason).toBe("no address");
 });
 
-test("the command passes on the scenarios of the repository", async () => {
+test("the command passes on the scenarios of the repository", { timeout: 60_000 }, async () => {
   const lines: string[] = [];
   expect(await runCommand(defaultOptions, (line) => lines.push(line))).toBe(0);
   const files = (await readdir(defaultOptions.scenariosDir)).filter((name) => name.endsWith(".json"));

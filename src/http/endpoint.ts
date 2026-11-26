@@ -16,6 +16,8 @@ export interface EndpointOptions {
   rules: readonly Rule[];
   channel: Channel;
   store: EventStore;
+  /** Gives the time of the call as a Date. Without it the endpoint reads the clock. */
+  now?: () => Date;
 }
 
 type Checked = { event: Event } | { error: string };
@@ -138,7 +140,14 @@ async function handle(
     return;
   }
   try {
-    const message = await judgeEvent(checked.event, options.rules, options.channel, options.store);
+    const arrivedAt = options.now === undefined ? new Date() : options.now();
+    const message = await judgeEvent(
+      checked.event,
+      options.rules,
+      options.channel,
+      options.store,
+      arrivedAt,
+    );
     answer(res, 200, { message: message?.level ?? null });
   } catch {
     answer(res, 500, { error: "the channel failed" });

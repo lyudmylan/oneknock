@@ -16,6 +16,10 @@ export interface Scenario {
   name: string;
   events: unknown[];
   messages: Message[];
+  /** Names and values that the runner adds to the environment of the process of this scenario. */
+  settings?: Record<string, string>;
+  /** The runner waits this number of milliseconds after the last event, and then it reads the messages. */
+  waitMs?: number;
 }
 
 /** The result of one scenario. */
@@ -118,7 +122,7 @@ async function runScenario(file: string, scenario: Scenario, options: RunOptions
   const [program, ...args] = options.command;
   const child = spawn(program as string, args, {
     cwd: options.cwd,
-    env: { ...process.env, ONEKNOCK_RECORD_FILE: recordFile, ONEKNOCK_PORT: "0" },
+    env: { ...process.env, ...scenario.settings, ONEKNOCK_RECORD_FILE: recordFile, ONEKNOCK_PORT: "0" },
     stdio: ["ignore", "pipe", "inherit"],
   });
   // A spawn error reaches readAddress; this listener keeps a later one from going unhandled.
@@ -133,6 +137,9 @@ async function runScenario(file: string, scenario: Scenario, options: RunOptions
         result.reason = `an event got the answer ${response.status}, not 200`;
         return result;
       }
+    }
+    if (scenario.waitMs !== undefined && scenario.waitMs > 0) {
+      await new Promise((resolve) => setTimeout(resolve, scenario.waitMs));
     }
     result.actual = await readMessages(recordFile);
     code = await stopProcess(child);

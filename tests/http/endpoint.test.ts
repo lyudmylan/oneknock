@@ -54,6 +54,27 @@ function post(url: string, body: string): Promise<Response> {
   });
 }
 
+// intents/time-limit-knock.md, check 17
+test("the endpoint gives the core the time of the arrival", async () => {
+  const fixed = new Date("2026-11-20T08:00:05Z");
+  const store = new MemoryEventStore();
+  const server = createEndpoint({
+    rules: [urgentGetsKnock],
+    channel: listChannel(),
+    store,
+    now: () => fixed,
+  });
+  servers.push(server);
+  await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
+  const url = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
+  const response = await post(url, JSON.stringify(event({ urgent: false })));
+  expect(response.status).toBe(200);
+  expect(await store.waitingSince(new Date(fixed.getTime() - 1))).toEqual([]);
+  expect(await store.waitingSince(fixed)).toEqual([
+    { identity: "event-1", startTime: "2026-11-20T08:00:00Z" },
+  ]);
+});
+
 // intents/http-endpoint.md, check 1
 test("an urgent event gets a knock through the endpoint", async () => {
   const channel = listChannel();
