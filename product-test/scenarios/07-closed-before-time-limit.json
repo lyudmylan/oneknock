@@ -1,0 +1,10 @@
+{
+  "name": "an event that closes before the time limit gets no knock",
+  "settings": { "ONEKNOCK_TIME_LIMIT_SECONDS": "1" },
+  "waitMs": 3000,
+  "events": [
+    { "state": "open", "identity": "event-1", "startTime": "2026-11-20T08:00:00Z", "urgent": false },
+    { "state": "closed", "identity": "event-1", "startTime": "2026-11-20T08:00:00Z", "urgent": false }
+  ],
+  "messages": []
+}

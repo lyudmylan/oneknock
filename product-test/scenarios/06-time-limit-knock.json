@@ -1,0 +1,16 @@
+{
+  "name": "an event with no result gets a knock when the time limit passes",
+  "settings": { "ONEKNOCK_TIME_LIMIT_SECONDS": "1" },
+  "waitMs": 3000,
+  "events": [
+    { "state": "open", "identity": "event-1", "startTime": "2026-11-20T08:00:00Z", "urgent": false }
+  ],
+  "messages": [
+    {
+      "level": "knock",
+      "identity": "event-1",
+      "startTime": "2026-11-20T08:00:00Z",
+      "rule": "the time limit passed with no result"
+    }
+  ]
+}

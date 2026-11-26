@@ -9,7 +9,20 @@ test("the settings have their defaults", () => {
     recordFile: "messages.jsonl",
     port: 8080,
     host: "127.0.0.1",
+    timeLimitSeconds: 600,
   });
+});
+
+// intents/time-limit-knock.md, check 11
+test("the time limit is a number of seconds from 1 to 86400", () => {
+  const read = (value?: string) =>
+    readSettings({ ONEKNOCK_RECORD_FILE: "a", ONEKNOCK_TIME_LIMIT_SECONDS: value }).timeLimitSeconds;
+  expect(read()).toBe(600);
+  expect(read("90")).toBe(90);
+  expect(read("86400")).toBe(86400);
+  for (const text of ["0", "86401", "1.5", "-5", "abc"]) {
+    expect(() => read(text)).toThrow("ONEKNOCK_TIME_LIMIT_SECONDS");
+  }
 });
 
 test("the settings read the port and the host", () => {

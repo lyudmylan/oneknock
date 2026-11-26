@@ -17,12 +17,13 @@ export async function judgeEvent(
   rules: readonly Rule[],
   channel: Channel,
   store: EventStore,
+  arrivedAt: Date,
 ): Promise<Message | undefined> {
   if (event.state === "closed") {
     await store.close(event.identity, event.startTime);
     return undefined;
   }
-  if (!(await store.open(event.identity, event.startTime))) {
+  if (!(await store.open(event.identity, event.startTime, arrivedAt))) {
     return undefined;
   }
   const rule = rules.find((candidate) => matches(candidate, event));
@@ -35,6 +36,10 @@ export async function judgeEvent(
     startTime: event.startTime,
     rule: rule.name,
   };
+  if (rule.action === "knock") {
+    // Marked before the send, so the time limit gives no second knock. A quiet message leaves the event waiting.
+    await store.markKnocked(event.identity, event.startTime);
+  }
   try {
     await channel.send(message);
   } catch (error) {
