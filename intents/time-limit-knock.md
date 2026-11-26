@@ -21,7 +21,8 @@ when the time limit in seconds is over.
     returns false.
   - `unmarkKnocked` takes the identity and the start time. An open event that is marked waits again.
   - `waitingSince` takes a time as a `Date`. It gives the events that wait and that arrived at this
-    time or before it, in the order of their arrival, each as its identity and its start time.
+    time or before it, in the order of their arrival, each as an object with `identity` and
+    `startTime`.
   - `close` and `forget` stay as they are.
 - `src/store/memory.ts`: `MemoryEventStore` has the new operations.
 - `src/core/judge.ts`: `judgeEvent` takes the time of the arrival as its fifth value and gives it to
@@ -40,13 +41,23 @@ when the time limit in seconds is over.
   - When the channel fails for an event, the core calls `unmarkKnocked` and goes on with the next event.
     So the next check sends the knock, and one failure does not stop the knock of another event.
   - It gives back two lists of messages: `sent` and `failed`.
-- `src/http/endpoint.ts`: the endpoint gives the core the time at which the call arrived.
+- `src/http/endpoint.ts`: the endpoint gives the core the time at which the call arrived. The options
+  of the endpoint get an optional value `now`, a function that gives the time as a `Date`. Without it
+  the endpoint reads the clock.
 - `src/settings.ts`: a fourth setting, `ONEKNOCK_TIME_LIMIT_SECONDS`, the value `timeLimitSeconds`. It
   takes digits only, from 1 to 86400. The default is 600. A wrong value gives an error that names the
   variable.
-- `src/main.ts`: oneknock calls `judgeTimeLimit` each second, with the time of that moment. A check does
-  not start while the check before it runs. For each failed message it writes one line to the error
-  output. The stop of the process ends the checks.
+- `src/time-limit-checks.ts`, new, outside the core: the function `startTimeLimitChecks`.
+  - It takes three values: `intervalMs`, the function `check`, and the function `writeError`. `check`
+    takes a time as a `Date` and gives back the lists `sent` and `failed`. `writeError` takes one line.
+  - It calls `check` each `intervalMs` milliseconds, with the time of that moment. A check does not
+    start while the check before it runs.
+  - For each failed message it gives one line to `writeError`. The line names the identity and the start
+    time of the event. When `check` throws, it gives one line with the text of the error, and the
+    checks go on.
+  - It gives back a function that ends the checks: after its call no check starts.
+- `src/main.ts`: oneknock starts the checks with an interval of 1000 milliseconds, with `judgeTimeLimit`
+  and the setting of the time limit, and with the error output. The stop of the process ends the checks.
 - `product-test/run.ts`: a scenario can hold two more values, and both are optional.
   - `settings`: names and values that the runner adds to the environment of the process of this
     scenario. The record file and the port of the runner stay as the runner sets them.
@@ -69,9 +80,10 @@ when the time limit in seconds is over.
     limit. Until the result input exists, no result stops the time limit.
   - The row "Core" names the judgement at the time limit. The row "Test of the product" names the two
     new values of a scenario.
-  - The row "Start of the process" names the fourth setting and the check each second. It says that
-    the default of 600 seconds holds until the lab measures the agent. It gives the reason for the
-    check each second: the time limits are in the store, so no timer holds state.
+  - The row "Start of the process" names the fourth setting, the file `src/time-limit-checks.ts` and
+    the check each second. It says that the default of 600 seconds holds until the lab measures the
+    agent. It gives the reason for the check each second: the time limits are in the store, so no
+    timer holds state.
 - The change request has the line `No document change: the product document states this behaviour`.
 
 ## Out of scope
@@ -117,8 +129,8 @@ In checks 1 to 9 the time limit is 600 seconds, and the event arrives at the tim
     first call and false at the second one, and false for an event that is closed or not known. After
     `unmarkKnocked` the list holds the event again.
     test: `tests/store/memory.test.ts::the store gives the events that wait since a given time`
-11. The setting `ONEKNOCK_TIME_LIMIT_SECONDS`: no value gives 600, and `90` gives 90. Each of `0`,
-    `86401`, `1.5`, `-5` and `abc` gives an error that names the variable.
+11. The setting `ONEKNOCK_TIME_LIMIT_SECONDS`: no value gives 600, `90` gives 90, and `86400` gives
+    86400. Each of `0`, `86401`, `1.5`, `-5` and `abc` gives an error that names the variable.
     test: `tests/settings.test.ts::the time limit is a number of seconds from 1 to 86400`
 12. A scenario with `settings`: its process has each name with its value in its environment.
     test: `tests/product-test/run.test.ts::a scenario gives its settings to its process`
@@ -133,6 +145,19 @@ In checks 1 to 9 the time limit is 600 seconds, and the event arrives at the tim
 16. The two tests that run the scenarios of the repository pass with the three new scenarios.
     test: `tests/product-test/run.test.ts::the command passes on the scenarios of the repository`
     test: `tests/product-test/run.test.ts::the two first scenarios pass`
+17. An endpoint with a `now` that gives a fixed time, and one open event: the store gets this time as
+    the time of the arrival.
+    test: `tests/http/endpoint.test.ts::the endpoint gives the core the time of the arrival`
+18. An interval of 10 milliseconds and a check that runs 100 milliseconds: no check starts while another
+    one runs.
+    test: `tests/time-limit-checks.test.ts::a check does not start while the check before it runs`
+19. A check that gives two failed messages: `writeError` gets two lines, and each line names its event.
+    test: `tests/time-limit-checks.test.ts::each failed message gives one line`
+20. A check that throws at its first call: `writeError` gets one line with the text of the error, and a
+    second check runs.
+    test: `tests/time-limit-checks.test.ts::a check that throws does not end the checks`
+21. After the call of the function that ends the checks, no check starts.
+    test: `tests/time-limit-checks.test.ts::the checks end at the stop`
 
 The checks of the earlier intents stay as they are and still pass with `pnpm test`, with one change: each
 test that calls `judgeEvent` or `open` gives it a time of arrival.
