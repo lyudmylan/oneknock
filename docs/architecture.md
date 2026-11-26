@@ -84,7 +84,8 @@ version the team is the oneknock lab, and the engineer who runs the lab is its p
 
 - The detector gives each event an identity. Two events are the same when they have the same identity
   and the same start time. An event stays open until the detector says that it is closed. A repeat of
-  an open event starts no new judgement and no new message.
+  an open event starts no new judgement and no new message. An event that was closed starts nothing
+  again. An event whose message failed is judged again at its repeat.
 - Each call of the agent names its event with the identity and the start time. The agent works on one
   event at a time in one run. oneknock records a call that names an event it does not know, and that
   call starts nothing.
@@ -123,14 +124,14 @@ has no such encryption, so a push through ntfy carries a short text with no evid
 
 | Part | What it does, and why it is built this way | Where | Since |
 |---|---|---|---|
-| Core | Judges at the event, at the result and at the time limit. Reads the configuration and applies it. Its code does not include specifics of a use case | `src/core/` holds the judgement at the event with rules. The rest is planned | |
+| Core | Judges at the event, at the result and at the time limit. Reads the configuration and applies it. Its code does not include specifics of a use case | `src/core/` holds the judgement at the event with rules, and the interface `EventStore` in `src/core/event-store.ts`, through which it keeps the state of the events. The rest is planned | |
 | HTTP endpoint | Accepts the calls with events, steps and results, checks the token and the input, and passes them to the core. It is thin and sits outside the core, so the hosted way can run it as a service | `src/http/` holds `POST /events`, which checks the four values of an event and passes them to the core. The token, steps and results are planned | |
 | Start of the process | Starts oneknock as one process with `node src/main.ts`. It reads three settings: `ONEKNOCK_RECORD_FILE`, `ONEKNOCK_PORT` (default 8080) and `ONEKNOCK_HOST` (default `127.0.0.1`). Choice: Node runs the TypeScript files as they are, with no build step. Reason: one command starts oneknock with nothing to build first | `src/main.ts` and `src/settings.ts`. `src/first-rule.ts` holds the first rule until the configuration exists | |
 | Test of the product | Starts oneknock as a process, sends the events of a scenario to its HTTP endpoint, and compares the messages of the recording channel with the known answer of the scenario. Run it with `node product-test/run.ts`; `pnpm test` does not run it. The contract names this command as its product test, so the job `product` of each change request runs it. Choice: one process of oneknock for each scenario, with port 0 and its own record file. Reason: no scenario sees the events or the open events of another one, so the order of the scenarios changes no result | `product-test/` holds the runner, and `product-test/scenarios/` holds one JSON file for each scenario. A new scenario is a new file |  |
 | Event format | A map from the format of one detector to the four values that the core needs: the state of the event, its identity, its start time, and whether it is urgent. A map is configuration, so a new detector needs no change in the core | planned | |
 | Result input | One interface, "a result arrived", with one way per kind of agent as configuration. Agents differ in how they send a result, and the core does not see the difference | planned | |
 | Model | Calls the model that the configuration selects. One setting holds the model, its instruction and its threshold, because a threshold is valid for one model only | planned | |
-| Record store | PostgreSQL. Holds the record and the open events. A database server lets the open events survive a restart and keeps the hosted way possible | planned | |
+| Record store | PostgreSQL. Holds the record and the open events. A database server lets the open events survive a restart and keeps the hosted way possible | `src/store/memory.ts` holds the events in memory until the record store exists. The events do not survive a restart until then | |
 | Knowledge store | Markdown files in git about the services of a team, in the [Open Knowledge Format](https://github.com/GoogleCloudPlatform/open-knowledge-format) of Google Cloud. An engineer of the team reviews each change. Open point: how the files reach a hosted oneknock | planned | |
 | Channel | An interface with two levels: a knock is the highest, and a quiet message is the lowest. A configuration selects the channel. More channels can come later, such as PagerDuty, Slack or Telegram. The recording channel writes to a file until the record store exists | `src/core/channel.ts` holds the interface, and `src/channel/` holds the recording channel. The push to a phone is planned | |
 | MCP server | Gives the setup agent its tools: ask for a token, send a test event, read a judgement. A tool for the result of an agent comes later | planned | |

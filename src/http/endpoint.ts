@@ -4,16 +4,18 @@ import { createServer, type IncomingMessage, type Server, type ServerResponse } 
 
 import type { Channel } from "../core/channel.ts";
 import type { Event } from "../core/event.ts";
+import type { EventStore } from "../core/event-store.ts";
 import { judgeEvent } from "../core/judge.ts";
 import type { Rule } from "../core/rule.ts";
 
 /** The largest body that the endpoint reads, in bytes. */
 export const MAX_BODY_BYTES = 1024 * 1024;
 
-/** What the endpoint needs: the rules and the channel for the judgement. */
+/** What the endpoint needs: the rules, the channel and the store of events for the judgement. */
 export interface EndpointOptions {
   rules: readonly Rule[];
   channel: Channel;
+  store: EventStore;
 }
 
 type Checked = { event: Event } | { error: string };
@@ -136,7 +138,7 @@ async function handle(
     return;
   }
   try {
-    const message = await judgeEvent(checked.event, options.rules, options.channel);
+    const message = await judgeEvent(checked.event, options.rules, options.channel, options.store);
     answer(res, 200, { message: message?.level ?? null });
   } catch {
     answer(res, 500, { error: "the channel failed" });

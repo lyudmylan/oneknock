@@ -8,6 +8,7 @@ import type { Channel, Message } from "../../src/core/channel.ts";
 import type { Event } from "../../src/core/event.ts";
 import { checkEvent, createEndpoint } from "../../src/http/endpoint.ts";
 import { urgentGetsKnock } from "../../src/first-rule.ts";
+import { MemoryEventStore } from "../../src/store/memory.ts";
 
 const servers: Server[] = [];
 
@@ -29,7 +30,7 @@ function listChannel(): Channel & { messages: Message[] } {
 }
 
 async function start(channel: Channel): Promise<string> {
-  const server = createEndpoint({ rules: [urgentGetsKnock], channel });
+  const server = createEndpoint({ rules: [urgentGetsKnock], channel, store: new MemoryEventStore() });
   servers.push(server);
   await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
   return `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
@@ -165,4 +166,17 @@ test("a value outside the four is not passed to the core", async () => {
   expect(channel.messages).toHaveLength(1);
   const checked = checkEvent({ ...event(), extra: "value" });
   expect(checked).toStrictEqual({ event: event() });
+});
+
+// intents/event-repeats.md, check 9
+test("a repeat of an open event gets the answer null", async () => {
+  const channel = listChannel();
+  const url = await start(channel);
+  const first = await post(url, JSON.stringify(event()));
+  expect(first.status).toBe(200);
+  expect(await first.json()).toEqual({ message: "knock" });
+  const second = await post(url, JSON.stringify(event()));
+  expect(second.status).toBe(200);
+  expect(await second.json()).toEqual({ message: null });
+  expect(channel.messages).toHaveLength(1);
 });
